@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Big Small Pattern Predictor</title>
+  <style>
+    body {
+      background-color: black;
+      color: #00ff00;
+      font-family: monospace;
+      padding: 20px;
+    }
+    input, button, textarea {
+      background-color: #111;
+      color: #0f0;
+      border: 1px solid #0f0;
+      padding: 8px;
+      margin: 5px 0;
+      width: 100%;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #0f0;
+    }
+  </style>
+</head>
+<body>
+  <h2>Big Small Pattern Predictor</h2>
+
+  <label>Historical Data (only digits):</label>
+  <textarea id="historicalData" rows="10"></textarea>
+
+  <label>Current History (16 digits):</label>
+  <input type="text" id="currentHistory" value="3365196704558009">
+
+  <button onclick="predict()">Predict</button>
+
+  <div id="result"></div>
+
+  <script>
+    function numberToBigSmall(num) {
+      return parseInt(num) <= 4 ? 'Small' : 'Big';
+    }
+
+    function toPattern(str) {
+      return str.split('').map(numberToBigSmall).join(',');
+    }
+
+    function similarity(p1, p2) {
+      const a = p1.split(',');
+      const b = p2.split(',');
+      let match = 0;
+      for (let i = 0; i < a.length; i++) {
+        if (a[i] === b[i]) match++;
+      }
+      return match;
+    }
+
+    function predict() {
+      const history = document.getElementById("historicalData").value.trim();
+      const current = document.getElementById("currentHistory").value.trim();
+      const currentPattern = toPattern(current);
+
+      let bestMatchIndex = -1;
+      let highestSimilarity = -1;
+
+      for (let i = 0; i <= history.length - current.length - 1; i++) {
+        const slice = history.slice(i, i + current.length);
+        const pattern = toPattern(slice);
+        const score = similarity(pattern, currentPattern);
+
+        if (score > highestSimilarity) {
+          highestSimilarity = score;
+          bestMatchIndex = i;
+        }
+      }
+
+      let resultText = "No match found.";
+      if (bestMatchIndex !== -1) {
+        const nextDigit = history[bestMatchIndex + current.length];
+        const prediction = numberToBigSmall(nextDigit);
+        resultText = `Predicted: ${nextDigit} → ${prediction}\nMatch Index: ${bestMatchIndex}, Score: ${highestSimilarity}/16`;
+      }
+
+      document.getElementById("result").innerText = resultText;
+    }
+  </script>
+</body>
+</html>
